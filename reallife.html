@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow</title>
+    <style>
+        :root {
+            --bg-color: #f4f5f7;
+            --board-bg: #ffffff;
+            --column-bg: #ebecf0;
+            --text-color: #172b4d;
+            --primary: #0052cc;
+            --primary-hover: #0065ff;
+            --card-bg: #ffffff;
+            --danger: #de350b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dfe1e6;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            padding: 8px 12px;
+            border: 2px solid #dfe1e6;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 250px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            flex-grow: 1;
+            align-items: start;
+        }
+
+        .column {
+            background-color: var(--column-bg);
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+            min-height: 400px;
+        }
+
+        .column h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #5e6c84;
+        }
+
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 200px;
+            flex-grow: 1;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 12px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .card:active {
+            cursor: grabbing;
+        }
+
+        .card.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
+        }
+
+        .card p {
+            font-size: 14px;
+            word-break: break-word;
+            margin-right: 10px;
+        }
+
+        .delete-btn {
+            background: none;
+            color: #7a869a;
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .delete-btn:hover {
+            background-color: #ebecf0;
+            color: var(--danger);
+        }
+        
+        @media (max-width: 768px) {
+            .board {
+                grid-template-columns: 1fr;
+            }
+            body {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>TaskFlow</h1>
+        <div class="input-container">
+            <input type="text" id="task-input" placeholder="Enter a new task...">
+            <button onclick="createNewTask()">Add Task</button>
+        </div>
+    </header>
+
+    <div class="board">
+        <div class="column" data-status="todo">
+            <h2>To Do</h2>
+            <div class="card-list" id="todo-list"></div>
+        </div>
+
+        <div class="column" data-status="inprogress">
+            <h2>In Progress</h2>
+            <div class="card-list" id="inprogress-list"></div>
+        </div>
+
+        <div class="column" data-status="done">
+            <h2>Done</h2>
+            <div class="card-list" id="done-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let tasks = JSON.parse(localStorage.getItem('kanban-tasks')) || [
+            { id: '1', text: 'Create a dynamic web app template', status: 'done' },
+            { id: '2', text: 'Test drag and drop responsiveness', status: 'inprogress' },
+            { id: '3', text: 'Add custom categorization labels', status: 'todo' }
+        ];
+
+        // Initialize Board
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTasks();
+            setupDragAndDrop();
+        });
+
+        // Render Tasks to UI
+        function renderTasks() {
+            const lists = {
+                todo: document.getElementById('todo-list'),
+                inprogress: document.getElementById('inprogress-list'),
+                done: document.getElementById('done-list')
+            };
+
+            // Clear existing elements
+            Object.values(lists).forEach(list => list.innerHTML = '');
+
+            // Populate items
+            tasks.forEach(task => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = task.id;
+                card.draggable = true;
+                
+                card.innerHTML = `
+                    <p>${escapeHTML(task.text)}</p>
+                    <button class="delete-btn" onclick="deleteTask('${task.id}')">✕</button>
+                `;
+
+                // Re-bind drag events dynamically created items
+                card.addEventListener('dragstart', () => card.classList.add('dragging'));
+                card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+                if(lists[task.status]) {
+                    lists[task.status].appendChild(card);
+                }
+            });
+        }
+
+        // Add a New Task
+        function createNewTask() {
+            const input = document.getElementById('task-input');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const newTask = {
+                id: Date.now().toString(),
+                text: text,
+                status: 'todo'
+            };
+
+            tasks.push(newTask);
+            saveAndRefresh();
+            input.value = '';
+        }
+
+        // Delete a Task
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveAndRefresh();
+        }
+
+        // Setup HTML5 Drag and Drop Handlers
+        function setupDragAndDrop() {
+            const lists = document.querySelectorAll('.card-list');
+
+            lists.forEach(list => {
+                list.addEventListener('dragover', e => {
+                    e.preventDefault(); // Required to allow dropping
+                    const draggingCard = document.querySelector('.dragging');
+                    list.appendChild(draggingCard);
+                });
+
+                list.addEventListener('drop', e => {
+                    const draggingCard = document.querySelector('.dragging');
+                    if (!draggingCard) return;
+
+                    const targetStatus = list.parentElement.getAttribute('data-status');
+                    const taskId = draggingCard.id;
+
+                    // Update internal state
+                    const taskIndex = tasks.findIndex(t => t.id === taskId);
+                    if (taskIndex > -1) {
+                        tasks[taskIndex].status = targetStatus;
+                        saveData();
+                    }
+                });
+            });
+        }
+
+        // State Management helpers
+        function saveData() {
+            localStorage.setItem('kanban-tasks', JSON.stringify(tasks));
+        }
+
+        function saveAndRefresh() {
+            saveData();
+            renderTasks();
+        }
+
+        // Sanitize Input
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // Listen for Enter key press on input field
+        document.getElementById('task-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') createNewTask();
+        });
+    </script>
+</body>
+</html>
