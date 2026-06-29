@@ -1,32 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Shop Inventory Management Portal</title>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
-    .container { max-width: 450px; margin: 0 auto; background: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .container { max-width: 450px; margin: 40px auto; background: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     h2 { margin-top: 0; color: #2c3e50; text-align: center; font-size: 24px; }
     .form-group { margin-bottom: 15px; }
     label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
     input, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
     input:focus, select:focus { border-color: #3498db; outline: none; }
-    button { background-color: #2ecc71; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; }
-    button:hover { background-color: #27ae60; }
+    button { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; }
+    button:hover { background-color: #2980b9; }
     #status { margin-top: 15px; font-weight: bold; text-align: center; font-size: 14px; }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h2>Inventory Transaction Portal</h2>
+    <h2>PC Shop Inventory Management Portal</h2>
     <form id="inventoryForm">
       <div class="form-group">
         <label for="itemName">Item Name</label>
-        <input type="text" id="itemName" placeholder="e.g., Wireless Mouse" required>
+        <input type="text" id="itemName" placeholder="e.g., Laptop Power Cord" required>
       </div>
       <div class="form-group">
-        <label for="sku">SKU / Item Code</label>
-        <input type="text" id="sku" placeholder="e.g., MS-WRLS-01" required>
+        <label for="sku">SKU / Code</label>
+        <input type="text" id="sku" placeholder="e.g., PWR-LP-09" required>
       </div>
       <div class="form-group">
         <label for="type">Transaction Type</label>
@@ -37,28 +39,31 @@
       </div>
       <div class="form-group">
         <label for="quantity">Quantity</label>
-        <input type="number" id="quantity" min="1" placeholder="0" required>
+        <input type="number" id="quantity" min="1" placeholder="1" required>
       </div>
       <div class="form-group">
         <label for="operator">Handled By</label>
         <input type="text" id="operator" placeholder="Your Name" required>
       </div>
-      <button type="submit">Log Transaction</button>
+      <button type="submit">Submit Log</button>
     </form>
     <div id="status"></div>
   </div>
 
   <script>
-    // JavaScript utilizing anonymous functions to handle events securely
-    document.getElementById('inventoryForm').addEventListener('submit', function(e) {
-      e.preventDefault(); // Prevents the page from standard form reloading behavior
-      
-      var statusDiv = document.getElementById('status');
-      statusDiv.style.color = '#34495e';
-      statusDiv.innerText = 'Processing transaction...';
+    // 1. Paste your Google Apps Script Web App URL below
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyPCHDDKyWMj9e-W2MWCoMC1bnGJzACkx_pq-mR6fon_CI-QP7xfYTem441oz0HNAAjSg/exec";
 
-      // Pack form data into a clean payload object
-      var itemData = {
+    // 2. Anonymous function attached to the form's submit listener
+    document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+      e.preventDefault(); // Stop page refresh
+
+      const statusDiv = document.getElementById('status');
+      statusDiv.style.color = '#34495e';
+      statusDiv.innerText = 'Sending data to Google Sheets...';
+
+      // Capture and package form inputs
+      const payload = {
         itemName: document.getElementById('itemName').value,
         sku: document.getElementById('sku').value,
         type: document.getElementById('type').value,
@@ -66,18 +71,26 @@
         operator: document.getElementById('operator').value
       };
 
-      // Executing GAS connection with anonymous callback functions
-      google.script.run
-        .withSuccessHandler(function(response) {
-          statusDiv.style.color = '#27ae60';
-          statusDiv.innerText = '✔ Transaction successfully logged to Sheet!';
-          document.getElementById('inventoryForm').reset(); // Clears form for next entry
-        })
-        .withFailureHandler(function(error) {
-          statusDiv.style.color = '#c0392b';
-          statusDiv.innerText = '❌ Error: ' + error.message;
-        })
-        .recordTransaction(itemData); // Calls the backend function in Code.gs
+      // 3. Dispatch data via Fetch API using anonymous promise callbacks
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Bypasses cross-origin domain browser blocks
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(function() {
+        // Anonymous success handler
+        statusDiv.style.color = '#27ae60';
+        statusDiv.innerText = '✔ Successfully Saved to Google Sheets!';
+        document.getElementById('inventoryForm').reset();
+      })
+      .catch(function(error) {
+        // Anonymous error handler
+        statusDiv.style.color = '#c0392b';
+        statusDiv.innerText = '❌ Network Error: ' + error.message;
+      });
     });
   </script>
 
