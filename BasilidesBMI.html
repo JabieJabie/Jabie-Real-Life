@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Self-Check Kiosk</title>
+  <style>
+    /* CSS Variables for consistent theming */
+    :root {
+      --primary-color: #2980B9;
+      --primary-hover: #1A5276;
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --text-dark: #2c3e50;
+      --text-muted: #555555;
+      --border-color: #dcdde1;
+      --border-radius: 8px;
+    }
+
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* Semantic Main Container */
+    main.card {
+      background-color: var(--card-bg);
+      padding: 35px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    /* Semantic Header */
+    header {
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    header h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    /* Form Layout using CSS Grid */
+    #bmiForm {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Class to span the full width of the grid */
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    input, select {
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      outline: none;
+      background-color: #fafafa;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary-color);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.15);
+    }
+
+    button {
+      grid-column: 1 / -1;
+      padding: 14px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: var(--primary-hover);
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      background-color: #95a5a6;
+      cursor: not-allowed;
+    }
+
+    /* Semantic Section: Result Card Styling */
+    #resultCard {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      text-align: center;
+      color: #1a1a1a;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    #resultCard h3 {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+    }
+
+    #resultCard p {
+      font-size: 1.05rem;
+      line-height: 1.5;
+    }
+
+    .hidden {
+      display: none;
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    /* Semantic Footer */
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Media Query: Stack elements vertically on small screens */
+    @media (max-width: 600px) {
+      #bmiForm {
+        grid-template-columns: 1fr;
+      }
+      
+      main.card {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="card">
+    <header>
+      <h2>Health Self-Check Kiosk</h2>
+    </header>
+    
+    <section aria-labelledby="form-heading">
+      <form id="bmiForm"> 
+        <div class="form-group full-width">
+          <label for="name">Full Name</label> 
+          <input type="text" id="name" placeholder="Enter your full name" required> 
+        </div>
+        
+        <div class="form-group">
+          <label for="age">Age</label> 
+          <input type="number" id="age" min="1" max="120" placeholder="e.g. 25" required> 
+        </div>
+        
+        <div class="form-group">
+          <label for="sex">Sex</label> 
+          <select id="sex" required> 
+            <option value="">Select</option> 
+            <option value="Female">Female</option> 
+            <option value="Male">Male</option> 
+          </select> 
+        </div>
+        
+        <div class="form-group">
+          <label for="weight">Weight (kg)</label> 
+          <input type="number" id="weight" min="1" step="0.1" placeholder="e.g. 70" required> 
+        </div>
+        
+        <div class="form-group">
+          <label for="height">Height (cm)</label> 
+          <input type="number" id="height" min="1" placeholder="e.g. 175" required> 
+        </div>
+        
+        <button type="submit">Check My BMI</button> 
+      </form> 
+    </section>
+    
+    <section id="resultCard" class="hidden" aria-live="polite"></section> 
+  </main>
+
+  <footer>
+    <p>Data is securely recorded for health tracking.</p>
+  </footer>
+
+  <script>
+    // Main Form Submission Logic
+    document.getElementById('bmiForm').addEventListener('submit', function(e) { 
+      e.preventDefault(); 
+      
+      const name = document.getElementById('name').value.trim(); 
+      const weight = parseFloat(document.getElementById('weight').value); 
+      const heightCm = parseFloat(document.getElementById('height').value); 
+      
+      // if-else: validation 
+      if (!name || isNaN(weight) || isNaN(heightCm) || weight <= 0 || heightCm <= 0) { 
+        alert('Please fill out all fields with valid values.'); 
+        return; 
+      } 
+      
+      const heightM = heightCm / 100; 
+      const bmi = +(weight / (heightM * heightM)).toFixed(1); 
+      
+      let category, message, color; 
+      
+      // switch-case: classify BMI 
+      switch (true) { 
+        case bmi < 18.5: 
+          category = 'Underweight'; color = '#5DADE2'; 
+          message = 'Consider a balanced, calorie-sufficient diet.'; 
+          break; 
+        case bmi < 25: 
+          category = 'Normal'; color = '#58D68D'; 
+          message = 'Great! Keep up your healthy habits.'; 
+          break; 
+        case bmi < 30: 
+          category = 'Overweight'; color = '#F5B041'; 
+          message = 'Consider more physical activity and mindful eating.'; 
+          break; 
+        default: 
+          category = 'Obese'; color = '#EC7063'; 
+          message = 'We recommend consulting a healthcare provider.'; 
+      } 
+      
+      showResult(name, bmi, category, message, color); 
+      recordSubmission({ name, weight, heightCm, bmi, category }); 
+    });
+
+    // Helper Function: Update the DOM with the result and background color
+    function showResult(name, bmi, category, message, color) {
+      const resultCard = document.getElementById('resultCard');
+      
+      // Remove hidden class and apply slight animation delay hack
+      resultCard.classList.remove('hidden');
+      setTimeout(() => {
+        resultCard.style.opacity = '1';
+        resultCard.style.transform = 'translateY(0)';
+      }, 10);
+      
+      resultCard.style.backgroundColor = color; 
+      resultCard.innerHTML = `
+        <h3>${name}'s BMI: <strong>${bmi}</strong></h3>
+        <p><strong>Category:</strong> ${category}</p>
+        <p style="margin-top: 8px;"><em>${message}</em></p>
+      `;
+    }
+
+   // Helper Function: Send data to Google Sheets via Apps Script
+    function recordSubmission(data) {
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbz5shb7ls8oMbU5SZ0Hhas9ywua27WZcszoI2RgxCRfUCcT2K8wT8cQKbymNnRUmXvDtQ/exec'; 
+      
+      const submitBtn = document.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerText;
+      submitBtn.innerText = 'Saving...';
+      submitBtn.disabled = true;
+
+      fetch(scriptUrl, {
+        method: 'POST',
+        redirect: 'follow',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(result => {
+        console.log('Successfully saved to Google Sheets:', result);
+      })
+      .catch(error => {
+        console.error('Error saving data:', error);
+      })
+      .finally(() => {
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>
