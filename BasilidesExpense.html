@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quick Expense Logger</title>
+  <title>Smart Expense Logger</title>
   <style>
     /* CSS Variables */
     :root {
@@ -18,135 +18,53 @@
     }
 
     /* Reset & Base Styles */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-dark);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 20px;
     }
 
-    /* Semantic Main Container */
+    /* Form Layout */
     main.card {
-      background-color: var(--card-bg);
-      padding: 35px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-      width: 100%;
-      max-width: 450px;
+      background-color: var(--card-bg); padding: 35px; border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); width: 100%; max-width: 450px;
     }
+    header { margin-bottom: 25px; text-align: center; }
+    header h2 { font-size: 1.8rem; font-weight: 700; }
+    header p { color: var(--text-muted); font-size: 0.95rem; margin-top: 5px; }
 
-    header {
-      margin-bottom: 25px;
-      text-align: center;
-    }
-
-    header h2 {
-      font-size: 1.8rem;
-      font-weight: 700;
-    }
-
-    header p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      margin-top: 5px;
-    }
-
-    /* CSS Grid Form */
-    #expenseForm {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .full-width {
-      grid-column: 1 / -1;
-    }
-
-    label {
-      margin-bottom: 6px;
-      font-weight: 600;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
+    #expenseForm { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .form-group { display: flex; flex-direction: column; }
+    .full-width { grid-column: 1 / -1; }
+    
+    label { margin-bottom: 6px; font-weight: 600; color: var(--text-muted); font-size: 0.9rem; }
     input, select {
-      padding: 12px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      background-color: #fafafa;
-      transition: all 0.3s ease;
+      padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius);
+      font-size: 1rem; background-color: #fafafa; transition: all 0.3s ease;
     }
-
-    input:focus, select:focus {
-      border-color: var(--primary-color);
-      background-color: #fff;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.15);
-    }
-
+    input:focus, select:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.15); }
+    
     button {
-      grid-column: 1 / -1;
-      padding: 14px;
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius);
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background-color 0.2s ease;
+      grid-column: 1 / -1; padding: 14px; background-color: var(--primary-color);
+      color: white; border: none; border-radius: var(--border-radius);
+      font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background-color 0.2s ease;
     }
-
-    button:hover:not(:disabled) {
-      background-color: var(--primary-hover);
-    }
-
-    button:disabled {
-      background-color: #95a5a6;
-      cursor: not-allowed;
-    }
+    button:hover:not(:disabled) { background-color: var(--primary-hover); }
+    button:disabled { background-color: #95a5a6; cursor: not-allowed; }
 
     /* Result Feedback Styling */
     #feedbackCard {
-      margin-top: 25px;
-      padding: 15px;
-      border-radius: var(--border-radius);
-      text-align: center;
-      font-weight: 600;
-      color: #fff;
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      margin-top: 25px; padding: 15px; border-radius: var(--border-radius);
+      text-align: center; color: #fff; transition: opacity 0.3s ease, transform 0.3s ease;
     }
+    #feedbackCard p { font-weight: 600; font-size: 1.1rem;}
+    #feedbackCard small { display: block; margin-top: 8px; font-size: 0.85rem; opacity: 0.9; }
+    .hidden { display: none; opacity: 0; transform: translateY(-10px); }
 
-    .hidden {
-      display: none;
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-
-    /* Media Query for Mobile */
-    @media (max-width: 500px) {
-      #expenseForm {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 500px) { #expenseForm { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -161,11 +79,11 @@
       <form id="expenseForm"> 
         <div class="form-group full-width">
           <label for="item">What did you buy?</label> 
-          <input type="text" id="item" placeholder="e.g. Food" required> 
+          <input type="text" id="item" placeholder="Food" required> 
         </div>
         
         <div class="form-group">
-          <label for="amount">Amount (P)</label> 
+          <label for="amount">Amount ($)</label> 
           <input type="number" id="amount" min="0.01" step="0.01" placeholder="50" required> 
         </div>
         
@@ -194,16 +112,59 @@
   </main>
 
   <script>
+    // Pre-fill today's date
     document.getElementById('date').valueAsDate = new Date();
 
     document.getElementById('expenseForm').addEventListener('submit', function(e) { 
       e.preventDefault(); 
       
       const item = document.getElementById('item').value.trim(); 
-      const amount = parseFloat(document.getElementById('amount').value).toFixed(2); 
-      const date = document.getElementById('date').value; 
+      const amount = parseFloat(document.getElementById('amount').value); 
+      const dateString = document.getElementById('date').value; 
       const category = document.getElementById('category').value; 
- 
+      
+      // ==========================================
+      // CONDITIONAL 1: Date Validation (Simple If)
+      // ==========================================
+      const selectedDate = new Date(dateString);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalize time to midnight for accurate comparison
+
+      if (selectedDate > today) {
+        alert("Wait a minute! You cannot log an expense for a future date.");
+        return; // Stop the function from proceeding
+      }
+
+      // ==========================================
+      // CONDITIONAL 2: Expense Size Logic (If / Else If / Else)
+      // ==========================================
+      let sizeMessage = "";
+      if (amount < 200) {
+        sizeMessage = "Small purchase.";
+      } else if (amount >= 200 && amount <= 500) {
+        sizeMessage = "Standard purchase.";
+      } else {
+        sizeMessage = "Large purchase! Watch your budget.";
+      }
+
+      // ==========================================
+      // CONDITIONAL 3: Need vs Want (Switch Statement)
+      // ==========================================
+      let necessity = "";
+      switch (category) {
+        case "Utilities":
+        case "Transportation":
+          necessity = "Essential (Need)";
+          break;
+        case "Food & Dining":
+        case "Entertainment":
+          necessity = "Lifestyle (Want)";
+          break;
+        default:
+          necessity = "Uncategorized";
+      }
+      
+      // Determine background color based on category
       const categoryColors = {
         "Food & Dining": "#E67E22",
         "Transportation": "#3498DB",
@@ -211,16 +172,22 @@
         "Entertainment": "#F1C40F",
         "Other": "#34495E"
       };
-
       const color = categoryColors[category] || "#2ecc71";
-
-      const expenseData = { item, amount, date, category };
       
-      showFeedback(`Saved! $${amount} logged for ${item}.`, color); 
+      // Combine the messages to show to the user
+      const fullMessage = `
+        <p>Saved! $${amount.toFixed(2)} logged for ${item}.</p>
+        <small><strong>Analysis:</strong> ${sizeMessage} | ${necessity}</small>
+      `;
+
+      // Package data and send
+      const expenseData = { item, amount: amount.toFixed(2), date: dateString, category };
+      
+      showFeedback(fullMessage, color); 
       recordExpense(expenseData); 
     });
 
-    function showFeedback(message, color) {
+    function showFeedback(htmlContent, color) {
       const feedbackCard = document.getElementById('feedbackCard');
       
       feedbackCard.classList.remove('hidden');
@@ -230,14 +197,17 @@
       }, 10);
       
       feedbackCard.style.backgroundColor = color; 
-      feedbackCard.innerHTML = `<p>${message}</p>`;
+      feedbackCard.innerHTML = htmlContent;
+
+      // Hide feedback after 5 seconds
       setTimeout(() => {
         feedbackCard.style.opacity = '0';
         setTimeout(() => feedbackCard.classList.add('hidden'), 300);
-      }, 4000);
+      }, 5000);
     }
 
     function recordExpense(data) {
+      // REPLACE THIS with your actual Google Apps Script Web App URL
       const scriptUrl = 'https://script.google.com/macros/s/AKfycbzU1wNW4nPeEKK7isLOFgOzvn8Ljq_-VfBX9f089RwJdC-atHvTOF3yWsB9f89Yp1YtNw/exec'; 
       
       const submitBtn = document.querySelector('button[type="submit"]');
@@ -255,8 +225,8 @@
       .then(response => response.json())
       .then(result => {
         console.log('Successfully saved to Google Sheets');
-        form.reset(); // Clear the form
-        document.getElementById('date').valueAsDate = new Date(); // Reset date to today
+        form.reset(); 
+        document.getElementById('date').valueAsDate = new Date(); 
       })
       .catch(error => console.error('Error saving data:', error))
       .finally(() => {
