@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workshop Registration Portal</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
+            --bg-page: #0f172a;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .portal-wrapper {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 820px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Left Side: Form */
+        .form-section {
+            padding: 2.5rem;
+        }
+
+        header {
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 1.65rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.35rem;
+            color: var(--text-main);
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            color: #334155;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+        }
+
+        /* Custom Interactive Checkbox Cards */
+        .addons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .addon-card {
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            background: #f8fafc;
+            user-select: none;
+        }
+
+        .addon-card:hover {
+            border-color: #cbd5e1;
+            background: #f1f5f9;
+        }
+
+        .addon-card:has(input:checked) {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .addon-check {
+            margin-top: 0.15rem;
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+        }
+
+        .addon-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .addon-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .addon-price {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Right Side: Live Summary Panel */
+        .summary-section {
+            background: #f8fafc;
+            border-left: 1px solid var(--border);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .summary-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .summary-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: auto;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .summary-row.total {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            border-top: 1.5px dashed var(--border);
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+            margin-top: 1.5rem;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        #feedback-box {
+            margin-top: 1.25rem;
+            padding: 1rem;
+            border-radius: 10px;
+            display: none;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .field-error {
+            border-color: var(--error) !important;
+            background: #fef2f2 !important;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            .portal-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .summary-section {
+                border-left: none;
+                border-top: 1px solid var(--border);
+                padding: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="portal-wrapper">
+    <div class="form-section">
+        <header>
+            <h1>Workshop Event Registration</h1>
+            <p class="subtitle">Enter your details and select your package.</p>
+        </header>
+
+        <form id="regForm" onsubmit="handleRegistration(event)">
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" class="form-input" placeholder="Jabie">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" class="form-input" placeholder="jabie@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="role">Participant Role</label>
+                <select id="role" class="form-input">
+                    <option value="">Select your role...</option>
+                    <option value="Student">Student (40% Discount)</option>
+                    <option value="Professional">Professional (Full Price: P100)</option>
+                    <option value="Freelancer">Freelancer (15% Discount)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Optional Add-ons</label>
+                <div class="addons-grid">
+                    <label class="addon-card">
+                        <input type="checkbox" class="addon-check" value="25">
+                        <div class="addon-info">
+                            <span class="addon-title">Certificate</span>
+                            <span class="addon-price">+P25.00</span>
+                        </div>
+                    </label>
+                    <label class="addon-card">
+                        <input type="checkbox" class="addon-check" value="50">
+                        <div class="addon-info">
+                            <span class="addon-title">Mentorship</span>
+                            <span class="addon-price">+P50.00</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">Confirm & Register</button>
+        </form>
+
+        <div id="feedback-box"></div>
+    </div>
+
+    <div class="summary-section">
+        <div>
+            <div class="summary-header">Fee Breakdown</div>
+            <div class="summary-rows">
+                <div class="summary-row">
+                    <span>Base Registration</span>
+                    <span id="sum-base">P0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span>Selected Add-ons</span>
+                    <span id="sum-addons">P0.00</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Due</span>
+                    <span id="sum-total" style="color: var(--primary);">P0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxd_t6QJQyAKiIE2xqvom13_EB1ggypC5YuZDsUwWxh4QBIYbX2HIWgGpqBR4LTdOwO/exec';
+
+// Live UI Calculator Listener
+document.getElementById('regForm').addEventListener('change', updateLiveSummary);
+
+function updateLiveSummary() {
+    const roleInput = document.getElementById('role').value;
+    const checkedAddons = document.querySelectorAll('.addon-check:checked');
+    
+    let basePrice = 100;
+    let fee = 0;
+
+    switch (roleInput) {
+        case 'Student': fee = basePrice * 0.60; break;
+        case 'Freelancer': fee = basePrice * 0.85; break;
+        case 'Professional': fee = basePrice; break;
+        default: fee = 0;
+    }
+
+    let addOnTotal = 0;
+    for (let checkbox of checkedAddons) {
+        addOnTotal += Number(checkbox.value);
+    }
+
+    document.getElementById('sum-base').textContent = `P${fee.toFixed(2)}`;
+    document.getElementById('sum-addons').textContent = `P${addOnTotal.toFixed(2)}`;
+    document.getElementById('sum-total').textContent = `P${(fee + addOnTotal).toFixed(2)}`;
+}
+
+async function handleRegistration(event) {
+    event.preventDefault();
+
+    // 1. DOM Method 1: getElementById (Individual specific elements)
+    const nameInput = document.getElementById('fullName');
+    const emailInput = document.getElementById('email');
+    const roleInput = document.getElementById('role');
+    const feedbackBox = document.getElementById('feedback-box');
+
+    // 2. DOM Method 2: querySelectorAll (NodeList collection)
+    const allTextInputs = document.querySelectorAll('.form-input');
+    const checkedAddons = document.querySelectorAll('.addon-check:checked');
+
+    // 3. DOM Method 3: querySelector (Targeting primary button inside form)
+    const submitBtn = document.querySelector('#regForm button[type="submit"]');
+
+    // --- Control Structure 1: forEach Loop (Resetting visual state) ---
+    allTextInputs.forEach(input => input.classList.remove('field-error'));
+    feedbackBox.style.display = 'none';
+
+    // --- Control Structure 2: if/else Validation Flow ---
+    let isValid = true;
+    if (nameInput.value.trim() === '') {
+        nameInput.classList.add('field-error');
+        isValid = false;
+    }
+    if (emailInput.value.trim() === '' || !emailInput.value.includes('@')) {
+        emailInput.classList.add('field-error');
+        isValid = false;
+    }
+    if (roleInput.value === '') {
+        roleInput.classList.add('field-error');
+        isValid = false;
+    }
+
+    if (!isValid) {
+        feedbackBox.style.display = 'block';
+        feedbackBox.style.backgroundColor = '#fef2f2';
+        feedbackBox.style.color = '#dc2626';
+        feedbackBox.innerHTML = '<strong>Error:</strong> Please fill in all required fields correctly.';
+        return;
+    }
+
+    // --- Control Structure 3: switch Statement (Fee Calculation) ---
+    let basePrice = 100;
+    let finalFee = 0;
+
+    switch (roleInput.value) {
+        case 'Student':
+            finalFee = basePrice * 0.60; // 40% discount
+            break;
+        case 'Freelancer':
+            finalFee = basePrice * 0.85; // 15% discount
+            break;
+        default:
+            finalFee = basePrice;
+    }
+
+    // --- Control Structure 4: for...of Loop (Summing Add-ons) ---
+    for (let checkbox of checkedAddons) {
+        finalFee += Number(checkbox.value);
+    }
+
+    // Prepare payload for Google Apps Script
+    const payload = {
+        name: nameInput.value.trim(),
+        email: emailInput.value.trim(),
+        role: roleInput.value,
+        totalFee: finalFee.toFixed(2),
+        timestamp: new Date().toISOString()
+    };
+
+    // UI Feedback during request
+    submitBtn.textContent = 'Recording Submission...';
+    submitBtn.disabled = true;
+
+    try {
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        // Show Success Message
+        feedbackBox.style.display = 'block';
+        feedbackBox.style.backgroundColor = '#ecfdf5';
+        feedbackBox.style.color = '#065f46';
+        feedbackBox.innerHTML = `<strong>Registration Successful!</strong><br>Welcome, ${payload.name}. Your total fee of <strong>P${payload.totalFee}</strong> has been recorded.`;
+        
+        document.getElementById('regForm').reset();
+        updateLiveSummary(); // Reset live summary numbers to zero
+    } catch (error) {
+        feedbackBox.style.display = 'block';
+        feedbackBox.style.backgroundColor = '#fef2f2';
+        feedbackBox.style.color = '#dc2626';
+        feedbackBox.innerHTML = '<strong>Network Error:</strong> Could not record registration.';
+    } finally {
+        submitBtn.textContent = 'Confirm & Register';
+        submitBtn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>
