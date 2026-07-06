@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Billing Statement</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            padding: 30px 15px;
+        }
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #0d6efd;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #212529;
+            display: block;
+            margin-top: 12px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #0b5ed7;
+        }
+        .counter {
+            margin-top: 15px;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+        .receipt {
+            margin-top: 20px;
+            background-color: #eef5fb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            color: #212529;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Water Billing Statement</h2>
+
+    <label for="custName">Customer Name</label>
+    <input type="text" id="custName" placeholder="Enter customer name">
+
+    <label for="waterConsumption">Water Consumption (Cubic Meter)</label>
+    <input type="number" id="waterConsumption" placeholder="e.g. 100" min="1">
+
+    <label for="custType">Customer Type</label>
+    <select id="custType">
+        <option value="Regular">Regular</option>
+        <option value="Senior Citizen">Senior Citizen</option>
+        <option value="Solo Parent">Solo Parent</option>
+    </select>
+
+    <button onclick="generateBill()">Generate Bill</button>
+
+    <div class="counter" id="txCounter">Transactions Processed : 0</div>
+
+    <div class="receipt" id="receiptOutput"></div>
+</div>
+
+<script>
+    // Global variable to keep track of processed transactions
+    let transactionCount = 0;
+
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9qNAxICxrIeVjAFva2GrqN3Pi_4FQOwYp752Nk9zU08fRsw0pVhyAZwVlPkkWI2Dm/exec';
+
+    function generateBill() {
+        // 1. DOM ACCESS METHODS
+        const nameInput = document.getElementById('custName').value.trim();
+        const consumptionInput = parseFloat(document.getElementById('waterConsumption').value);
+        const typeInput = document.getElementById('custType').value;
+        const receiptDiv = document.getElementById('receiptOutput');
+        const counterDiv = document.getElementById('txCounter');
+
+        // 2. INPUT VALIDATION
+        if (nameInput === "") {
+            alert("Please enter the customer name.");
+            return;
+        }
+        if (isNaN(consumptionInput) || consumptionInput <= 0) {
+            alert("Please enter a valid water consumption greater than 0.");
+            return;
+        }
+
+        // 3. CONDITIONAL STRUCTURES: Determine Rate per Cubic Meter
+        let rate = 0;
+        if (consumptionInput >= 1 && consumptionInput <= 20) {
+            rate = 25.00;
+        } else if (consumptionInput >= 21 && consumptionInput <= 40) {
+            rate = 35.00;
+        } else if (consumptionInput >= 41 && consumptionInput <= 60) {
+            rate = 45.00;
+        } else if (consumptionInput > 60) {
+            rate = 60.00;
+        }
+
+        const amount = consumptionInput * rate;
+
+        // Determine Discount based on Customer Type (Using switch statement)
+        let discountRate = 0;
+        switch (typeInput) {
+            case "Senior Citizen":
+                discountRate = 0.25; 
+                break;
+            case "Solo Parent":
+                discountRate = 0.15;
+                break;
+            case "Regular":
+            default:
+                discountRate = 0.00;
+                break;
+        }
+
+        const discountAmount = amount * discountRate;
+        const totalBill = amount - discountAmount;
+
+        // 4. LOOP STRUCTURE: Generating decorative receipt line (required for rubric screenshot)
+        let borderLine = "";
+        for (let i = 0; i < 30; i++) {
+            borderLine += "=";
+        }
+
+        // 5. INCREMENT TRANSACTION COUNTER
+        transactionCount++;
+        counterDiv.innerText = `Transactions Processed : ${transactionCount}`;
+
+        // 6. DISPLAY COMPUTED BILLING STATEMENT DYNAMICALLY
+        const receiptText = 
+`${borderLine}
+       WATER BILLING
+${borderLine}
+
+Customer Name : ${nameInput}
+Customer Type : ${typeInput}
+Water Usage   : ${consumptionInput} cu.m
+Rate          : P${rate.toFixed(2)} / cu.m
+
+Amount        : P${amount.toFixed(2)}
+Discount      : P${discountAmount.toFixed(2)}
+------------------------------
+TOTAL BILL    : P${totalBill.toFixed(2)}
+${borderLine}`;
+
+        receiptDiv.innerText = receiptText;
+
+    
+        if (GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE') {
+            sendToGoogleSheets(nameInput, consumptionInput, typeInput, rate, amount, discountAmount, totalBill);
+        }
+    }
+
+    function sendToGoogleSheets(name, usage, type, rate, amount, discount, total) {
+        const payload = {
+            customerName: name,
+            waterUsage: usage,
+            customerType: type,
+            rate: rate,
+            amount: amount,
+            discount: discount,
+            totalBill: total
+        };
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        }).catch(err => console.error("Error logging to Google Sheets:", err));
+    }
+    
+    //https://docs.google.com/spreadsheets/d/1gyYPBHQ5lv2mCJAOQqt7KBRyOyh_gmQoPOJiXegryYw/edit?usp=sharing
+</script>
+
+</body>
+</html>
