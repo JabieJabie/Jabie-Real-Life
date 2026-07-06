@@ -102,20 +102,19 @@
 </div>
 
 <script>
-    // Global variable to keep track of processed transactions
     let transactionCount = 0;
 
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx9qNAxICxrIeVjAFva2GrqN3Pi_4FQOwYp752Nk9zU08fRsw0pVhyAZwVlPkkWI2Dm/exec';
 
     function generateBill() {
-        // 1. DOM ACCESS METHODS
+        // DOM
         const nameInput = document.getElementById('custName').value.trim();
         const consumptionInput = parseFloat(document.getElementById('waterConsumption').value);
         const typeInput = document.getElementById('custType').value;
         const receiptDiv = document.getElementById('receiptOutput');
         const counterDiv = document.getElementById('txCounter');
 
-        // 2. INPUT VALIDATION
+        // Input
         if (nameInput === "") {
             alert("Please enter the customer name.");
             return;
@@ -125,7 +124,7 @@
             return;
         }
 
-        // 3. CONDITIONAL STRUCTURES: Determine Rate per Cubic Meter
+        // Conditional
         let rate = 0;
         if (consumptionInput >= 1 && consumptionInput <= 20) {
             rate = 25.00;
@@ -139,7 +138,7 @@
 
         const amount = consumptionInput * rate;
 
-        // Determine Discount based on Customer Type (Using switch statement)
+        // Discounts (Swtich)
         let discountRate = 0;
         switch (typeInput) {
             case "Senior Citizen":
@@ -163,11 +162,11 @@
             borderLine += "=";
         }
 
-        // 5. INCREMENT TRANSACTION COUNTER
+        // Incremenet Counter
         transactionCount++;
         counterDiv.innerText = `Transactions Processed : ${transactionCount}`;
 
-        // 6. DISPLAY COMPUTED BILLING STATEMENT DYNAMICALLY
+        // Display
         const receiptText = 
 `${borderLine}
        WATER BILLING
