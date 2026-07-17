@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal - VS Code & Google Sheets</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f6f9; color: #334155; }
+        .navbar-brand { font-weight: 700; letter-spacing: -0.5px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+        .form-control { border-radius: 8px; padding: 10px 14px; border: 1px solid #cbd5e1; }
+        .form-control:focus { box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15); border-color: #0d6efd; }
+        .btn { border-radius: 8px; font-weight: 500; padding: 10px 18px; transition: all 0.2s ease; }
+        .table { vertical-align: middle; }
+        .table-hover tbody tr:hover { background-color: #f8fafc; }
+        .badge-course { background-color: #e2e8f0; color: #1e293b; font-weight: 600; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; }
+        .avatar-circle { width: 38px; height: 38px; background-color: #dbeafe; color: #1d4ed8; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; margin-right: 12px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm py-3 mb-5">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="bi bi-google fs-4 me-2"></i>
+            Student Data Portal <span class="badge bg-light text-primary ms-2 fs-6">VS Code + Sheets API</span>
+        </a>
+        <span class="navbar-text text-light opacity-75 small">Connected via REST JSON API</span>
+    </div>
+</nav>
+
+<div class="container pb-5">
+    <!-- Dynamic Alert Banner -->
+    <div id="alertBanner" class="alert alert-success alert-dismissible fade d-none shadow-sm border-0 mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span id="alertMessage">Action completed successfully!</span>
+        <button type="button" class="btn-close" onclick="closeAlert()"></button>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add / Edit Form -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div id="formIconBg" class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 me-3">
+                            <i id="formIcon" class="bi bi-person-plus-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 id="formTitle" class="card-title mb-0 fw-bold">Add Student</h5>
+                            <small id="formSubtitle" class="text-muted">Enroll a new student record</small>
+                        </div>
+                    </div>
+
+                    <form id="studentForm" novalidate>
+                        <input type="hidden" id="editId" value="">
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-medium text-secondary">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                                <input type="text" class="form-control border-start-0" id="name" placeholder="Juan Dela Cruz" required>
+                                <div class="invalid-feedback">Please provide a student name.</div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="course" class="form-label fw-medium text-secondary">Course / Program</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-journal-text text-muted"></i></span>
+                                <input type="text" class="form-control border-start-0" id="course" placeholder="BS Information Technology" required>
+                                <div class="invalid-feedback">Please provide a course name.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="button" id="cancelBtn" class="btn btn-light border flex-grow-1 d-none" onclick="resetForm()">Cancel</button>
+                            <button type="submit" id="submitBtn" class="btn btn-primary flex-grow-1 shadow-sm">
+                                <span id="btnText"><i class="bi bi-plus-lg me-1"></i> Save Record</span>
+                                <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Records Table -->
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h5 class="card-title mb-0 fw-bold">Enrolled Students</h5>
+                            <small class="text-muted">Live data from Google Sheets API</small>
+                        </div>
+                        <span id="recordCount" class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold">
+                            Loading...
+                        </span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light text-secondary small text-uppercase">
+                                <tr>
+                                    <th width="15%" class="py-3 border-0">ID</th>
+                                    <th width="45%" class="py-3 border-0">Student Name</th>
+                                    <th width="25%" class="py-3 border-0">Course</th>
+                                    <th width="15%" class="py-3 border-0 text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="border-top-0">
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <div class="spinner-border text-primary my-3" role="status"></div>
+                                        <p class="small mb-0">Connecting to Google Sheets database...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ==========================================
+// PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW:
+// ==========================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbywF-PMrF2oJY9WbRDm6XpzLxvHwFNJKy4-_iVYw6q1nKI7ZDaL1pu_MR3hpUUeos5TbA/exec';
+
+document.addEventListener("DOMContentLoaded", loadStudents);
+
+async function loadStudents() {
+    try {
+        const response = await fetch(`${API_URL}?action=read`);
+        const result = await response.json();
+        if (result.status === 'success') {
+            renderTable(result.data);
+        }
+    } catch (error) {
+        console.error("Error loading students:", error);
+        document.getElementById('tableBody').innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Failed to connect to Google Sheets API. Check console for details.</td></tr>`;
+    }
+}
+
+function renderTable(students) {
+    const tbody = document.getElementById('tableBody');
+    document.getElementById('recordCount').innerText = `${students.length} Total Records`;
+    tbody.innerHTML = '';
+
+    if (students.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-5">
+                    <div class="text-muted my-3">
+                        <i class="bi bi-folder2-open display-4 d-block mb-3 opacity-50"></i>
+                        <h6 class="fw-semibold mb-1">No student records found</h6>
+                        <p class="small mb-0">Use the form on the left to add your first student record.</p>
+                    </div>
+                </td>
+            </tr>`;
+        return;
+    }
+
+    students.forEach(student => {
+        const initials = student.name.charAt(0).toUpperCase();
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="fw-semibold text-muted">#${student.id}</td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <span class="avatar-circle">${initials}</span>
+                    <span class="fw-medium">${escapeHtml(student.name)}</span>
+                </div>
+            </td>
+            <td><span class="badge-course">${escapeHtml(student.course)}</span></td>
+            <td class="text-end">
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="editStudent('${student.id}', '${escapeHtml(student.name)}', '${escapeHtml(student.course)}')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteRecord('${student.id}')">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+// CREATE or UPDATE Record
+document.getElementById('studentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const nameInput = document.getElementById('name');
+    const courseInput = document.getElementById('course');
+    const editId = document.getElementById('editId').value;
+
+    if (!nameInput.value.trim() || !courseInput.value.trim()) {
+        if (!nameInput.value.trim()) nameInput.classList.add('is-invalid');
+        if (!courseInput.value.trim()) courseInput.classList.add('is-invalid');
+        return;
+    }
+    
+    nameInput.classList.remove('is-invalid');
+    courseInput.classList.remove('is-invalid');
+    setLoading(true);
+
+    const action = editId === "" ? "create" : "update";
+    const url = `${API_URL}?action=${action}&id=${encodeURIComponent(editId)}&name=${encodeURIComponent(nameInput.value.trim())}&course=${encodeURIComponent(courseInput.value.trim())}`;
+
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
+        if (result.status === 'success') {
+            renderTable(result.data);
+            resetForm();
+            showAlert(editId === "" ? 'New record saved to Google Sheets!' : 'Record updated successfully!');
+        }
+    } catch (error) {
+        console.error("Error saving student:", error);
+        alert("Failed to save data to Google Sheets.");
+        setLoading(false);
+    }
+});
+
+function editStudent(id, name, course) {
+    document.getElementById('editId').value = id;
+    document.getElementById('name').value = name;
+    document.getElementById('course').value = course;
+    
+    document.getElementById('formTitle').innerText = 'Edit Student';
+    document.getElementById('formSubtitle').innerText = `Updating Record ID: #${id}`;
+    document.getElementById('formIconBg').className = 'bg-warning bg-opacity-10 text-warning rounded-3 p-2 me-3';
+    document.getElementById('formIcon').className = 'bi bi-pencil-square fs-4';
+    document.getElementById('btnText').innerHTML = '<i class="bi bi-check2 me-1"></i> Update Record';
+    document.getElementById('submitBtn').className = 'btn btn-warning flex-grow-1 shadow-sm text-dark fw-bold';
+    document.getElementById('cancelBtn').classList.remove('d-none');
+}
+
+// DELETE Record
+async function deleteRecord(id) {
+    if (confirm("Are you sure you want to delete this record from Google Sheets?")) {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_URL}?action=delete&id=${encodeURIComponent(id)}`);
+            const result = await response.json();
+            if (result.status === 'success') {
+                renderTable(result.data);
+                setLoading(false);
+                showAlert('Record removed from Google Sheets!');
+            }
+        } catch (error) {
+            console.error("Error deleting student:", error);
+            alert("Failed to delete record.");
+            setLoading(false);
+        }
+    }
+}
+
+function resetForm() {
+    document.getElementById('studentForm').reset();
+    document.getElementById('editId').value = "";
+    document.getElementById('formTitle').innerText = 'Add Student';
+    document.getElementById('formSubtitle').innerText = 'Enroll a new student record';
+    document.getElementById('formIconBg').className = 'bg-primary bg-opacity-10 text-primary rounded-3 p-2 me-3';
+    document.getElementById('formIcon').className = 'bi bi-person-plus-fill fs-4';
+    document.getElementById('btnText').innerHTML = '<i class="bi bi-plus-lg me-1"></i> Save Record';
+    document.getElementById('submitBtn').className = 'btn btn-primary flex-grow-1 shadow-sm';
+    document.getElementById('cancelBtn').classList.add('d-none');
+    setLoading(false);
+}
+
+function setLoading(isLoading) {
+    const btn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('btnSpinner');
+    const btnText = document.getElementById('btnText');
+    if (isLoading) {
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.classList.add('d-none');
+    } else {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+        btnText.classList.remove('d-none');
+    }
+}
+
+function showAlert(msg) {
+    const banner = document.getElementById('alertBanner');
+    document.getElementById('alertMessage').innerText = msg;
+    banner.classList.remove('d-none', 'fade');
+    banner.classList.add('show');
+    setTimeout(closeAlert, 4000);
+}
+
+function closeAlert() {
+    document.getElementById('alertBanner').classList.add('d-none');
+}
+
+function escapeHtml(text) {
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+</script>
+</body>
+</html>
